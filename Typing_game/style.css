@@ -1,0 +1,7 @@
+.highlight{
+  background-color:yellowgreen;
+}
+.error{
+  background-color:red;
+  opacity: 0.6;
+}
