@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <style>
+        canvas {
+            display: block;
+            margin: 0 auto;
+            background-color: #b0c4de;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas width="600" height="600" id="huabu"></canvas>
+    <script>
+        const huabu = document.querySelector('#huabu');
+        const tools = huabu.getContext("2d");
+        //是否被吃
+        let isEated = false;
+        let snake = [{
+            x: 3,
+            y: 0
+        }, {
+            x: 2,
+            y: 0
+        }, {
+            x: 1,
+            y: 0
+        }];
+        let x = Math.floor(Math.random() * 20) * 30;
+        let y = Math.floor(Math.random() * 20) * 30;
+        let directionX = 1;
+        let directionY = 0;
+        let isGameOver = false;
+
+        document.addEventListener("keydown", (e) => {
+            if (e.keyCode === 37) {
+                directionX = -1;
+                directionY = 0;
+            } else if (e.keyCode === 38) {
+                directionX = 0;
+                directionY = -1;
+            } else if (e.keyCode === 39) {
+                directionX = 1;
+                directionY = 0;
+            } else if (e.keyCode === 40) {
+                directionX = 0;
+                directionY = 1;
+            }
+        });
+        setInterval(function () {
+            if (isGameOver) {
+                return;
+            }
+            tools.clearRect(0, 0, 600, 600);
+            if (isEated === true) {
+                x = Math.floor(Math.random() * 20) * 30;
+                y = Math.floor(Math.random() * 20) * 30;
+            }
+
+            tools.fillStyle = "#cccc00";
+            tools.fillRect(x, y, 30, 30);
+
+            //line
+            //x
+            for (let index = 1; index < 20; index++) {
+                tools.moveTo(0, 30 * index + 0.5);
+                tools.lineTo(600, 30 * index + 0.5);
+            }
+            //y
+            for (let index = 1; index < 20; index++) {
+                tools.moveTo(30 * index + 0.5, 0);
+                tools.lineTo(30 * index + 0.5, 600);
+            }
+            tools.strokeStyle = "white";
+            tools.stroke();
+
+            //
+            for (let i = 0; i < snake.length; i++) {
+                if (i === 0) {
+                    tools.fillStyle = "#ff0033";
+                } else {
+                    tools.fillStyle = "#333399";
+                }
+                tools.fillRect(snake[i].x * 30, snake[i].y * 30, 30, 30);
+            }
+            tools.fill();
+
+            //
+            if (snake[0].x * 30 === x && snake[0].y * 30 === y) {
+                isEated = true;
+            } else {
+                isEated = false;
+                snake.pop();
+            }
+            let oldHead = snake[0];
+            let newHead = {
+                x: oldHead.x + directionX,
+                y: oldHead.y + directionY
+            };
+            if (newHead.x < 0 || newHead.x > 19 || newHead.y < 0 || newHead.y > 19) {
+                isGameOver = true;
+            } else {
+                snake.unshift(newHead);
+            }
+        }, 1000 / 3)
+    </script>
+</body>
+
+</html>
