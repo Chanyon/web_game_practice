@@ -1,3 +1,5 @@
+// 教程地址
+// https://microsoft.github.io/Web-Dev-For-Beginners/
 const canvas = document.querySelector("#myCanvas");
 const ctx = canvas.getContext("2d");
 
@@ -13,7 +15,7 @@ function loadAsset(path) {
   })
 }
 
-let heroImg,enemyImg,laserImg,gameObjects = [],hero,laser;
+let heroImg,enemyImg,laserImg,lifeImg,gameObjects = [],hero,laser,gameLoop;
 
 class GameObject {
   constructor(x, y) {
@@ -36,11 +38,6 @@ class GameObject {
   }
 }
 
-// 比较函数
-function intersectRect(r1,r2){
-  return !(r2.left > r1.right || r2.right < r1.left || r2.top > r1.bottom || r2.bottom < r1.top);
-}
-
 class Hero extends GameObject {
   constructor(x, y,img) {
     super(x, y);
@@ -50,6 +47,8 @@ class Hero extends GameObject {
     this.speed = 1;
     this.img = img;
     this.coolDown = 0;
+    this.life = 3;
+    this.points = 0;
   }
   draw(){
     ctx.drawImage(this.img, this.x, this.y, this.width, this.height);
@@ -67,6 +66,15 @@ class Hero extends GameObject {
   }
   canFire(){
     return this.coolDown === 0;
+  }
+  decrementLife(){
+    this.life -= 1;
+    if(this.life === 0){
+      this.dead = true;
+    }
+  }
+  incrementPoints(){
+    this.points += 100;
   }
 }
 class Enemy extends GameObject {
@@ -95,6 +103,7 @@ class Laser extends GameObject {
     this.height = 33;
     this.type = "Laser";
     this.img = img;
+    this.dead = false;
     let id = setInterval(()=>{
       if(this.y >= 0){
         this.y -= 15;
@@ -125,12 +134,27 @@ function createEnemies(){
     }
   }
 }
+function drawLife(){
+  const START_POS = canvas.width - 180;
+  for (let i = 0; i < hero.life;i++){
+    ctx.drawImage(lifeImg,START_POS + 45*i+1,canvas.height-37);
+  }
+}
+function drawPoints(){
+  ctx.font = "30px Arial";
+  ctx.fillStyle = "red";
+  ctx.textAlign = "left";
+  drawText(`Points:${hero.points}`,10,canvas.height-20);
+}
+
+function drawText(message,x,y){
+  ctx.fillText(message,x,y);
+}
 
 // function createLaser(){
 //   laser = new Laser(canvas.width / 2 - 4,canvas.height - canvas.height/4-50,laserImg);
 //   gameObjects.push(laser);
 // }
-
 
 // PUB/SUB
 class EventEmitter {
@@ -150,6 +174,9 @@ class EventEmitter {
       this.listeners[message].forEach((l) => l(message, payload));
     }
   }
+  clear(){
+    this.listeners = {};
+  }
 }
 
 
@@ -158,9 +185,12 @@ const Messages = {
   KEY_EVENT_DOWN: "KEY_EVENT_DOWN",
   KEY_EVENT_LEFT: "KEY_EVENT_LEFT",
   KEY_EVENT_RIGHT: "KEY_EVENT_RIGHT",
-  KEy_EVENT_SPACE:"KEy_EVENT_SPACE",
+  KEY_EVENT_SPACE: "KEy_EVENT_SPACE",
   COLLISION_ENEMY_LASER: "COLLISION_ENEMY_LASER",
-  COLLISION_ENEMY_HERO: "COLLISION_ENEMY_HERO"
+  COLLISION_ENEMY_HERO: "COLLISION_ENEMY_HERO",
+  GAME_END_WIN: "GAME_END_WIN",
+  GAME_END_LOSS: "GAME_END_LOSS",
+  KEY_EVENT_ENTER: "KEY_EVENT_ENTER",
 };
 const eventEmitter = new EventEmitter();
 
@@ -170,18 +200,18 @@ function initGame(){
   createHero();
   // 事件监听
   eventEmitter.on(Messages.KEY_EVENT_UP,()=>{
-    hero.y -= 15;
+    hero.y -= 30;
   });
   eventEmitter.on(Messages.KEY_EVENT_DOWN,()=>{
-    hero.y += 15;
+    hero.y += 30;
   });
   eventEmitter.on(Messages.KEY_EVENT_LEFT,()=>{
-    hero.x -= 15;
+    hero.x -= 30;
   });
   eventEmitter.on(Messages.KEY_EVENT_RIGHT,()=>{
-    hero.x += 15;
+    hero.x += 30;
   });
-  eventEmitter.on(Messages.KEy_EVENT_SPACE,()=>{
+  eventEmitter.on(Messages.KEY_EVENT_SPACE,()=>{
     // 创建激光武器
     if(hero.canFire()){
       hero.fire();
@@ -191,8 +221,42 @@ function initGame(){
     // 控制敌人消失
     first.dead = true;
     second.dead = true;
+    hero.incrementPoints();
+    if(isEnemyDead()){
+      eventEmitter.emit(Messages.GAME_END_WIN);
+    }
+  });
+  eventEmitter.on(Messages.COLLISION_ENEMY_HERO,(_,{enemy})=>{
+    enemy.dead = true;
+    hero.decrementLife();
+    if(isHeroDead()){
+      eventEmitter.emit(Messages.GAME_END_LOSS);
+      return;
+    }
+    if(isEnemyDead()){
+      hero.dead = true;
+      eventEmitter.emit(Messages.GAME_END_WIN);
+    }
+  });
+
+  eventEmitter.on(Messages.GAME_END_WIN,()=>{
+    endGame(true);
+  });
+  eventEmitter.on(Messages.GAME_END_LOSS,()=>{
+    endGame(false);
+  });
+  eventEmitter.on(Messages.KEY_EVENT_ENTER,()=>{
+    if(isHeroDead() || isEnemyDead()){
+      resetGame();
+    }
   })
 }
+
+// 比较函数
+function intersectRect(r1,r2){
+  return !(r2.left > r1.right || r2.right < r1.left || r2.top > r1.bottom || r2.bottom < r1.top);
+}
+
 // 处理碰撞检测
 function updateGameObjects(){
   const enemies = gameObjects.filter(go => go.type === "Enemy");
@@ -206,9 +270,62 @@ function updateGameObjects(){
           second:m,
         });
       }
+    });
+    enemies.forEach(enemy => {
+      const heroRect = hero.rectFromObject();
+      if(intersectRect(heroRect,enemy.rectFromObject())){
+        eventEmitter.emit(Messages.COLLISION_ENEMY_HERO,{enemy});
+      }
     })
   })
   gameObjects = gameObjects.filter(go => !go.dead);
+}
+function isHeroDead(){
+  return hero.life <= 0;
+}
+function isEnemyDead(){
+  const enemies = gameObjects.filter(go => go.type === "Enemy" && !go.dead);
+  return enemies.length === 0;
+}
+
+// 显示获胜条件
+function displayMessage(message,color ="red"){
+  ctx.font = "30px Arial";
+  ctx.fillStyle = color;
+  ctx.textAlign = "center";
+  ctx.fillText(message,canvas.width / 2,canvas.height / 2);
+}
+
+function endGame(win){
+  clearInterval(gameLoop);
+  setTimeout(() =>{
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle = "black";
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    if(win){
+      displayMessage("Victory!!! Pew Pew... - Press [Enter] to start a new game Captain Pew Pew",
+      "green");
+    }else{
+      displayMessage("You died !!! Press [Enter] to start a new game Captain Pew Pew",color ="red");
+    }
+  },200);
+}
+// 重启游戏
+function resetGame(){
+  if(gameLoop){
+    clearInterval(gameLoop);
+    eventEmitter.clear();
+    initGame();
+    gameLoop = setInterval(()=>{
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      ctx.fillStyle = "black";
+      ctx.fillRect(0,0,canvas.width,canvas.height);
+      drawPoints();
+      drawLife();
+      updateGameObjects();
+      drawGameObjects();
+    },100);
+  }
 }
 
 window.addEventListener("keydown",(e)=>{
@@ -221,7 +338,9 @@ window.addEventListener("keydown",(e)=>{
   }else if(e.key === "ArrowRight"){
     eventEmitter.emit(Messages.KEY_EVENT_RIGHT);
   }else if(e.keyCode === 32){
-    eventEmitter.emit(Messages.KEy_EVENT_SPACE);
+    eventEmitter.emit(Messages.KEY_EVENT_SPACE);
+  }else if(e.key === "Enter"){
+    eventEmitter.emit(Messages.KEY_EVENT_ENTER);
   }
 });
 
@@ -229,13 +348,16 @@ window.onload = async function(){
   heroImg = await loadAsset("./assets/player.png")
   enemyImg = await loadAsset("./assets/enemyShip.png");
   laserImg = await loadAsset("./assets/player.png");
-  // initGame();
-  let gameLoop = setInterval(()=>{
+  lifeImg = await loadAsset("./assets/player.png");
+  initGame();
+  gameLoop = setInterval(()=>{
     ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.fillStyle = "black";
     ctx.fillRect(0,0,canvas.width,canvas.height);
     drawGameObjects();
     updateGameObjects();
+    drawLife();
+    drawPoints();
   },100);
 }
 function drawGameObjects(){
