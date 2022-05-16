@@ -16,10 +16,11 @@ const quoteEle = document.querySelector("#quote");
 const message = document.querySelector("#message");
 const typedValue = document.querySelector("#typed-value");
 const start = document.querySelector("#start");
-function random(){
+
+function random() {
   return Math.floor(Math.random() * quotes.length);
 }
-start.addEventListener("click",()=>{
+start.addEventListener("click", () => {
   let quoteIndex = random();
   let quote = quotes[quoteIndex];
   words = quote.split(' ');
@@ -34,25 +35,24 @@ start.addEventListener("click",()=>{
   startTime = new Date().getTime();
 });
 
-typedValue.addEventListener('input',(e)=>{
+typedValue.addEventListener('input', (e) => {
   console.log(e.target);
   const currentWord = words[wordsIndex];
   const inputValue = e.target.value;
-  if(inputValue === currentWord && wordsIndex === words.length - 1){
+  if (inputValue === currentWord && wordsIndex === words.length - 1) {
     const elapsedTime = new Date().getTime() - startTime;
     const messageTime = `CONGRATULATIONS! You finished in ${elapsedTime / 1000} seconds.`;
     message.innerText = messageTime;
-  }else if(currentWord === inputValue.trim() && inputValue.endsWith(" ")){
+  } else if (currentWord === inputValue.trim() && inputValue.endsWith(" ")) {
     typedValue.value = "";
     wordsIndex += 1;
-    for(const wordEle of quoteEle.children){
+    for (const wordEle of quoteEle.children) {
       wordEle.className = "";
     }
     quoteEle.children[wordsIndex].className = "highlight";
-  }else if(currentWord.startsWith(inputValue)){
+  } else if (currentWord.startsWith(inputValue)) {
     e.target.className = "";
-  }else{
+  } else {
     e.target.className = "error";
   }
 });
-

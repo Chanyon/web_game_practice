@@ -1,185 +1,195 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>骰子游戏</title>
-    <style>
-    canvas{
-        background-color:yellowgreen;
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>骰子游戏</title>
+  <style>
+    canvas {
+      background-color: yellowgreen;
     }
-    </style>
+  </style>
 </head>
+
 <body>
-    <canvas id="canvas" width="400" height="300">
+  <canvas id="canvas" width="400" height="300">
 
-    </canvas>
-    <div>
-        <p id="title"></p>
-        <p id="title2"></p>
-        <button>
-            Throw dice
-        </button>
-        
-    </div>
-    <script>
-        //骰子的水平垂直坐标
-        let diceX = 50;
-        let diceY = 50;
-        let diceWidth = 100;
-        let diceHeight = 100;
-        let dotrad = 6;
-        let dx = diceX,dy = diceY;//用于定位
-        let firsttrun = true;
-        let point;//点数
-        let title = document.querySelector("#title");
-        let title2 = document.querySelector("#title2");
-        let canvas = document.getElementById("canvas");
-        let ctx = canvas.getContext("2d");
-        function random(){
-            return Math.floor(Math.random()*6)+1;
-        }   
-        // function init(){
-        //     let ch = random();
-        //     drawFace(ch);
-        // }
-        function drawFace(ch){
-            ctx.lineWidth = 5;
-            ctx.clearRect(dx,dy,diceWidth,diceHeight);
-            ctx.strokeRect(dx,dy,diceWidth,diceHeight);
-            ctx.fillStyle = "#009966";
-            switch (ch) {
-                case 1:
-                    draw1();
-                    break;
-                case 2:
-                    draw2();
-                    break;
-                    case 2:
-                    draw2();
-                    break;
-                    case 3:
-                    draw2();
-                    draw1();
-                    break;
-                    case 4:
-                    draw4();
-                    break;
-                    case 5:
-                    draw4();
-                    draw1();
-                    break;
-                    case 6:
-                    draw4();
-                    draw2mid();
-                    break;
-                default:
-                    break;
-            }
-        }
-        function draw1(){
-            let dotX = dx + 0.5 * diceWidth;
-            let dotY = dy + 0.5 * diceHeight;
-            ctx.beginPath();
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            ctx.closePath();
-            ctx.fill();
-        }
-        function draw2(){
-            let dotX = dx + 0.3 * diceWidth;
-            let dotY = dy + 0.3 * diceHeight;
-            ctx.beginPath();
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            [dotX,dotY] = [diceWidth-0.3*diceWidth + dx,diceHeight-0.3*diceHeight+dy]
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            ctx.closePath();
-            ctx.fill();
-        }
-        function draw4(){
-            let dotX = dx + 0.3 * diceWidth;
-            let dotY = dy + 0.3 * diceHeight;
-            ctx.beginPath();
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            [dotX,dotY] = [diceWidth-0.3*diceWidth + dx,diceHeight-0.3*diceHeight+dy]
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            ctx.closePath();
-            ctx.fill();
-            ctx.beginPath();
-            [dotX,dotY] = [dx + diceWidth- 0.3 * diceWidth,dy+0.3*diceHeight]
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            [dotX,dotY] = [dx + 0.3 * diceWidth,dy+diceHeight-0.3*diceHeight]
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            ctx.closePath();
-            ctx.fill();
-        }
-        function draw2mid(){
-            let dotX = dx + 0.3 * diceWidth;
-            let dotY = dy + 0.5 * diceHeight;
-            ctx.beginPath();
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            [dotX,dotY] = [dx + 0.7 * diceWidth,dy + 0.5*diceHeight]
-            ctx.arc(dotX,dotY,dotrad,0,Math.PI * 2,true);
-            ctx.closePath();
-            ctx.fill()
-        }
+  </canvas>
+  <div>
+    <p id="title"></p>
+    <p id="title2"></p>
+    <button>
+      Throw dice
+    </button>
 
-        function throwdice(){
-            let sum = 0;
-            let ch = random();
-            sum = sum + ch;
-            dx = diceX;
-            dy = diceY;
-            drawFace(ch);
-            dx = dx + 150;
-            ch2 = random();
-            sum = sum+ ch2;
-            drawFace(ch2);
-            if(firsttrun){
-                switch (sum) {
-                    case 7:
-                    case 11:
-                        title.innerText = "You win!";
-                        break;
-                    case 2:
-                    case 3:
-                    case 12:
-                        title.innerText = "You lose!";
-                        break;
-                    default:
-                        point = sum;
-                        title.innerText = `${point}`;
-                        firsttrun = false;
-                        title2.innerText = "You need follow-up throw."
-                        // setTimeout(()=>{
-                        //     title.innerText = "";
-                        // },2000)
-                        break;
-                }
-            }else{
-                switch (sum) {
-                    case point:
-                        title.innerText = "You win!";
-                        title2.innerText = "Back to first throw.";
-                        firsttrun = true;
-                        break;
-                    case 7:
-                        title.innerText = "You win!";
-                        title2.innerText = "Back to first throw.";
-                        firsttrun = true;
-                        break;
-                    default:
-                        title.innerText = `${sum}`;
-                        // break;
-                }
-            }
-        }
+  </div>
+  <script>
+    //骰子的水平垂直坐标
+    let diceX = 50;
+    let diceY = 50;
+    let diceWidth = 100;
+    let diceHeight = 100;
+    let dotrad = 6;
+    let dx = diceX,
+      dy = diceY; //用于定位
+    let firsttrun = true;
+    let point; //点数
+    let title = document.querySelector("#title");
+    let title2 = document.querySelector("#title2");
+    let canvas = document.getElementById("canvas");
+    let ctx = canvas.getContext("2d");
 
-        window.onload = function(){
-            let button = document.querySelector('button');
-            button.addEventListener('click',throwdice);
-            // init();
+    function random() {
+      return Math.floor(Math.random() * 6) + 1;
+    }
+    // function init(){
+    //     let ch = random();
+    //     drawFace(ch);
+    // }
+    function drawFace(ch) {
+      ctx.lineWidth = 5;
+      ctx.clearRect(dx, dy, diceWidth, diceHeight);
+      ctx.strokeRect(dx, dy, diceWidth, diceHeight);
+      ctx.fillStyle = "#009966";
+      switch (ch) {
+        case 1:
+          draw1();
+          break;
+        case 2:
+          draw2();
+          break;
+        case 2:
+          draw2();
+          break;
+        case 3:
+          draw2();
+          draw1();
+          break;
+        case 4:
+          draw4();
+          break;
+        case 5:
+          draw4();
+          draw1();
+          break;
+        case 6:
+          draw4();
+          draw2mid();
+          break;
+        default:
+          break;
+      }
+    }
+
+    function draw1() {
+      let dotX = dx + 0.5 * diceWidth;
+      let dotY = dy + 0.5 * diceHeight;
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw2() {
+      let dotX = dx + 0.3 * diceWidth;
+      let dotY = dy + 0.3 * diceHeight;
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      [dotX, dotY] = [diceWidth - 0.3 * diceWidth + dx, diceHeight - 0.3 * diceHeight + dy]
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw4() {
+      let dotX = dx + 0.3 * diceWidth;
+      let dotY = dy + 0.3 * diceHeight;
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      [dotX, dotY] = [diceWidth - 0.3 * diceWidth + dx, diceHeight - 0.3 * diceHeight + dy]
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+      ctx.beginPath();
+      [dotX, dotY] = [dx + diceWidth - 0.3 * diceWidth, dy + 0.3 * diceHeight]
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      [dotX, dotY] = [dx + 0.3 * diceWidth, dy + diceHeight - 0.3 * diceHeight]
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function draw2mid() {
+      let dotX = dx + 0.3 * diceWidth;
+      let dotY = dy + 0.5 * diceHeight;
+      ctx.beginPath();
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      [dotX, dotY] = [dx + 0.7 * diceWidth, dy + 0.5 * diceHeight]
+      ctx.arc(dotX, dotY, dotrad, 0, Math.PI * 2, true);
+      ctx.closePath();
+      ctx.fill()
+    }
+
+    function throwdice() {
+      let sum = 0;
+      let ch = random();
+      sum = sum + ch;
+      dx = diceX;
+      dy = diceY;
+      drawFace(ch);
+      dx = dx + 150;
+      ch2 = random();
+      sum = sum + ch2;
+      drawFace(ch2);
+      if (firsttrun) {
+        switch (sum) {
+          case 7:
+          case 11:
+            title.innerText = "You win!";
+            break;
+          case 2:
+          case 3:
+          case 12:
+            title.innerText = "You lose!";
+            break;
+          default:
+            point = sum;
+            title.innerText = `${point}`;
+            firsttrun = false;
+            title2.innerText = "You need follow-up throw."
+            // setTimeout(()=>{
+            //     title.innerText = "";
+            // },2000)
+            break;
         }
-    </script>
+      } else {
+        switch (sum) {
+          case point:
+            title.innerText = "You win!";
+            title2.innerText = "Back to first throw.";
+            firsttrun = true;
+            break;
+          case 7:
+            title.innerText = "You win!";
+            title2.innerText = "Back to first throw.";
+            firsttrun = true;
+            break;
+          default:
+            title.innerText = `${sum}`;
+            // break;
+        }
+      }
+    }
+
+    window.onload = function () {
+      let button = document.querySelector('button');
+      button.addEventListener('click', throwdice);
+      // init();
+    }
+    
+  </script>
 </body>
+
 </html>

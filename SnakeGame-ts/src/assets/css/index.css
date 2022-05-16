@@ -1,0 +1,75 @@
+*{
+  margin: 0;
+  padding: 0;
+}
+:root {
+  --bg-color:#b7d4a8;
+  --black-color:#000000;
+}
+body {
+  display: flex;
+  justify-content:center;
+  /* align-items:center; */
+  background-color: burlywood;
+  font: bold 20px "Courier New", "Helvetica Neue";
+}
+
+#main{
+  display: flex;
+  justify-content:center;
+  align-items:center;
+  flex-flow: column;
+  margin: 100px auto;
+  width:360px;
+  height: 420px;
+  background-color: var(--bg-color);
+  border-radius: 20px;
+  border:10px solid black;
+}
+
+#stage{
+  position: relative;
+  width:304px;
+  height: 304px;
+  border:2px solid black;
+}
+
+#snake > div{
+  position:absolute;
+  width:10px;
+  height:10px;
+  background-color: var(--black-color);
+  border:1px solid var(--bg-color);
+}
+#snake > div:first-child{
+  background-color: red;
+  top: 0px;
+  left: 0px;
+}
+
+#food {
+  display:flex;
+  justify-content: space-between;
+  align-content: space-between;
+  flex-flow: row wrap;
+  width:10px;
+  height:10px;
+  position:absolute;
+  left: 40px;
+  top: 100px;
+}
+#food > div{
+  width:4px;
+  height:4px;
+  background-color:rgb(167,37,37);
+  transform: rotate(45deg);
+}
+
+#score-panel{
+  width:300px;
+  display: flex;
+  flex-flow:row;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 20px;
+}
