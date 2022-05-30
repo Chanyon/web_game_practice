@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rectangle</title>
+  <style>
+    body {
+      background-color: #ccc;
+    }
+    #canvas{
+      border: 1px solid #fff;
+    }
+    form{
+      width: 330px;
+      margin: 20px;
+      padding: 20px;
+      background-color: brown;
+    }
+    form input[type="text"]{
+      width: 80px;
+    }
+
+
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="600" height="400"></canvas>
+  <br/>
+  <form action="#" id="f">
+    <h2 style="font-size:14px;">set velocities and angle</h2>
+    <label for="vv">velocities displacement</label>
+    <input type="text" name="vv" id="vv" value="10" min="-100" max="100">
+    <label for="ang">angle</label>
+    <input type="text" name="ang" id="ang" value="40" min="0" max="360">
+    <button type="button" id="btn">FIRE</button>
+  </form>
+  <script src="./index2.js"></script>
+</body>
+</html>
