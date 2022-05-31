@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Canvas Cannon Game</title>
+  <style>
+    canvas{
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" width="900" height="500"></canvas>
+  <script>
+    let canvas = document.getElementById("canvas");
+    const ctx = canvas.getContext("2d");
+    let GameObject = [];
+    let vector2 = (x,y)=>{
+      let vec = {
+        vx:x,
+        vy:y,
+        scale: function(scale){
+          vec.vx *= scale;
+          vec.vy *= scale;
+        },
+        sub: function(vec2){
+          vec.vx = vec.vx - vec2.vx;
+          vec.vy = vec.vy - vec2.vy;
+        },
+        negated: function(){
+          vec.vx = -vec.vx;
+          vec.vy = -vec.vy;
+        },
+        length: function(){
+          return Math.sqrt(vec.vx * vec.vx + vec.vy * vec.vy);
+        },
+        normalize:function(){
+          let len = vec.length();
+          if(len){
+            vec.vx /= len;
+            vec.vy /= len;
+          }
+          // return len;
+        },
+        rotate:function(angle){
+          let vx = vec.vx,vy = vec.vy;
+          let cos_val = Math.cos(angle),sin_val = Math.sin(angle);
+          vec.vx = vx * cos_val - vy * sin_val;
+          vec.vy = vx * sin_val + vy * cos_val;
+        },
+        toString:function(){
+          return `(${vec.vx.toFixed(3)},${vec.vy.toFixed(3)})`;
+        }
+      }; 
+      return vec;
+    }
+
+    let cannonBall = function(x,y,vector){
+      let gravity = 0;
+      let obj = {
+        x,
+        y,
+        removeMe:false,
+        move: function(){
+          vector.vy += gravity;
+          gravity += 0.1;
+          this.x += vector.vx; 
+          this.y += vector.vy; 
+          
+          if(this.y > canvas.height -150) this.removeMe = true;
+        },
+        draw: function(ctx){
+          ctx.beginPath();
+          ctx.arc(this.x,this.y,5,0,Math.PI * 2,true);
+          ctx.fill();
+          ctx.closePath();
+        }
+      };
+      return obj;
+    }
+    let cannon = function(x,y){
+      let mx = my = 0;
+      let angle = 0;
+      let obj = {
+        x,
+        y,
+        angle:0,
+        removeMe:false,
+        move: function(){
+          angle = Math.atan2(my-this.y,mx-this.x);
+        },
+        draw: function(ctx){
+          ctx.save();
+          ctx.lineWidth = 2;
+          ctx.translate(this.x,this.y);
+          ctx.rotate(angle);
+          ctx.strokeRect(0,-5,50,10);
+          ctx.moveTo(0,0);
+          ctx.arc(0,0,15,0,Math.PI*2,true);
+          ctx.fill();
+          ctx.closePath();
+          ctx.restore();
+        }
+      };
+      canvas.addEventListener("mousedown",e =>{
+        let vec = vector2(mx-obj.x, my-obj.y);
+        vec.normalize();
+        vec.scale(25);
+        GameObject.push(cannonBall(obj.x,obj.y,vec));
+      });
+      canvas.addEventListener("mousemove",e =>{
+        let canvasRect = canvas.getBoundingClientRect();
+        mx = e.clientX - canvasRect.left;
+        my = e.clientY - canvasRect.top;
+      });
+      return obj;
+    }
+
+    let drawSkyAndGrass = function(){
+      ctx.save();
+      ctx.globalAlpha = 0.4;
+      let lineGrad = ctx.createLinearGradient(0,0,0,canvas.height);
+      lineGrad.addColorStop(0,'#00bfff');
+      lineGrad.addColorStop(0.5,'white');
+      lineGrad.addColorStop(0.5,"#55dd00");
+      lineGrad.addColorStop(1,"white");
+      ctx.fillStyle = lineGrad;
+      ctx.fillRect(0,0,canvas.white,canvas.height);
+      ctx.restore();
+    }
+    GameObject.push(cannon(50,canvas.height-150));
+
+    function drawAll(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      let gameObjectFresh = [];
+      GameObject.forEach(item =>{
+        item.draw(ctx);
+        item.move();
+        if(item.removeMe === false){
+          gameObjectFresh.push(item);
+        }
+        GameObject = gameObjectFresh;
+      })
+    }
+    setInterval(function(){
+      drawSkyAndGrass();
+      drawAll();
+    },1000/30);
+  </script>
+</body>
+</html>
